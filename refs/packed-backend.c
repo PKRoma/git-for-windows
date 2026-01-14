@@ -1437,7 +1437,8 @@ static enum ref_transaction_error write_with_updates(struct packed_ref_store *re
 						    update->refname);
 					ret = REF_TRANSACTION_ERROR_CREATE_EXISTS;
 
-					if (ref_transaction_maybe_set_rejected(transaction, i, ret)) {
+					if (ref_transaction_maybe_set_rejected(transaction, i,
+									       ret, err->buf)) {
 						strbuf_reset(err);
 						ret = 0;
 						continue;
@@ -1452,7 +1453,8 @@ static enum ref_transaction_error write_with_updates(struct packed_ref_store *re
 						    oid_to_hex(&update->old_oid));
 					ret = REF_TRANSACTION_ERROR_INCORRECT_OLD_VALUE;
 
-					if (ref_transaction_maybe_set_rejected(transaction, i, ret)) {
+					if (ref_transaction_maybe_set_rejected(transaction, i,
+									       ret, err->buf)) {
 						strbuf_reset(err);
 						ret = 0;
 						continue;
@@ -1496,7 +1498,8 @@ static enum ref_transaction_error write_with_updates(struct packed_ref_store *re
 					    oid_to_hex(&update->old_oid));
 				ret = REF_TRANSACTION_ERROR_NONEXISTENT_REF;
 
-				if (ref_transaction_maybe_set_rejected(transaction, i, ret)) {
+				if (ref_transaction_maybe_set_rejected(transaction, i,
+								       ret, err->buf)) {
 					strbuf_reset(err);
 					ret = 0;
 					continue;

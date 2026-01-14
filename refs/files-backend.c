@@ -2983,7 +2983,8 @@ static int files_transaction_prepare(struct ref_store *ref_store,
 					  head_ref, &refnames_to_check,
 					  err);
 		if (ret) {
-			if (ref_transaction_maybe_set_rejected(transaction, i, ret)) {
+			if (ref_transaction_maybe_set_rejected(transaction, i,
+							       ret, err->buf)) {
 				strbuf_reset(err);
 				ret = 0;
 
