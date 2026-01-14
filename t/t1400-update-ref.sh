@@ -2100,7 +2100,7 @@ do
 			echo $head >expect &&
 			git rev-parse refs/heads/ref2 >actual &&
 			test_cmp expect actual &&
-			test_grep -q "invalid new value provided" stdout
+			test_grep -q "trying to write ref ${SQ}refs/heads/ref2${SQ} with nonexistent object" stdout
 		)
 	'
 
@@ -2126,7 +2126,7 @@ do
 			echo $head >expect &&
 			git rev-parse refs/heads/ref2 >actual &&
 			test_cmp expect actual &&
-			test_grep -q "invalid new value provided" stdout
+			test_grep -q "trying to write non-commit object $head_tree to branch ${SQ}refs/heads/ref2${SQ}" stdout
 		)
 	'
 
@@ -2148,7 +2148,7 @@ do
 			git rev-parse refs/heads/ref1 >actual &&
 			test_cmp expect actual &&
 			test_must_fail git rev-parse refs/heads/ref2 &&
-			test_grep -q "reference does not exist" stdout
+			test_grep -q "cannot lock ref ${SQ}refs/heads/ref2${SQ}: unable to resolve reference ${SQ}refs/heads/ref2${SQ}" stdout
 		)
 	'
 
@@ -2172,7 +2172,7 @@ do
 			test_cmp expect actual &&
 			echo $head >expect &&
 			test_must_fail git rev-parse refs/heads/ref2 &&
-			test_grep -q "reference does not exist" stdout
+			test_grep -q "cannot lock ref ${SQ}refs/heads/ref2${SQ}: reference is missing but expected $head" stdout
 		)
 	'
 
@@ -2198,7 +2198,7 @@ do
 			echo $head >expect &&
 			git rev-parse refs/heads/ref2 >actual &&
 			test_cmp expect actual &&
-			test_grep -q "expected symref but found regular ref" stdout
+			test_grep -q "cannot lock ref ${SQ}refs/heads/ref2${SQ}: expected symref with target ${SQ}refs/heads/nonexistent${SQ}: but is a regular ref" stdout
 		)
 	'
 
@@ -2223,7 +2223,7 @@ do
 			echo $head >expect &&
 			git rev-parse refs/heads/ref2 >actual &&
 			test_cmp expect actual &&
-			test_grep -q "reference already exists" stdout
+			test_grep -q "cannot lock ref ${SQ}refs/heads/ref2${SQ}: reference already exists" stdout
 		)
 	'
 
@@ -2248,7 +2248,7 @@ do
 			echo $head >expect &&
 			git rev-parse refs/heads/ref2 >actual &&
 			test_cmp expect actual &&
-			test_grep -q "incorrect old value provided" stdout
+			test_grep -q "cannot lock ref ${SQ}refs/heads/ref2${SQ}: is at $head but expected $old_head" stdout
 		)
 	'
 
@@ -2269,7 +2269,7 @@ do
 			echo $old_head >expect &&
 			git rev-parse refs/heads/ref/foo >actual &&
 			test_cmp expect actual &&
-			test_grep -q "refname conflict" stdout
+			test_grep -q "${SQ}refs/heads/ref/foo${SQ} exists; cannot create ${SQ}refs/heads/ref${SQ}" stdout
 		)
 	'
 
@@ -2290,7 +2290,7 @@ do
 			echo $old_head >expect &&
 			git rev-parse refs/heads/foo >actual &&
 			test_cmp expect actual &&
-			test_grep -q "refname conflict" stdout
+			test_grep -q "${SQ}refs/heads/ref/foo${SQ} exists; cannot create ${SQ}refs/heads/ref${SQ}" stdout
 		)
 	'
 
@@ -2316,7 +2316,7 @@ do
 			echo $old_head >expect &&
 			git rev-parse refs/heads/ref >actual &&
 			test_cmp expect actual &&
-			test_grep -q "reference conflict due to case-insensitive filesystem" stdout
+			test_grep -e "cannot lock ref ${SQ}refs/heads/Foo${SQ}: Unable to create" -e "Foo.lock" stdout
 		)
 	'
 
@@ -2358,7 +2358,7 @@ do
 
 			format_command $type "delete refs/heads/symbolic" "$head" >stdin &&
 			git update-ref $type --stdin --batch-updates <stdin >stdout &&
-			test_grep "reference does not exist" stdout
+			test_grep "cannot lock ref ${SQ}refs/heads/symbolic${SQ}: unable to resolve reference ${SQ}refs/heads/non-existent${SQ}" stdout
 		)
 	'
 
@@ -2374,7 +2374,7 @@ do
 
 			format_command $type "delete refs/heads/new-branch" "$head" >stdin &&
 			git update-ref $type --stdin --batch-updates <stdin >stdout &&
-			test_grep "incorrect old value provided" stdout
+			test_grep "cannot lock ref ${SQ}refs/heads/new-branch${SQ}: is at $(git rev-parse new-branch) but expected $head" stdout
 		)
 	'
 
@@ -2388,7 +2388,7 @@ do
 
 			format_command $type "delete refs/heads/non-existent" "$head" >stdin &&
 			git update-ref $type --stdin --batch-updates <stdin >stdout &&
-			test_grep "reference does not exist" stdout
+			test_grep "cannot lock ref ${SQ}refs/heads/non-existent${SQ}: unable to resolve reference ${SQ}refs/heads/non-existent${SQ}" stdout
 		)
 	'
 done
