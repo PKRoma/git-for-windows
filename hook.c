@@ -81,7 +81,7 @@ static int pick_next_hook(struct child_process *cp,
 		cp->in = -1;
 	}
 
-	cp->stdout_to_stderr = 1;
+	cp->stdout_to_stderr = hook_cb->options->stdout_to_stderr;
 	cp->trace2_hook_name = hook_cb->hook_name;
 	cp->dir = hook_cb->options->dir;
 
@@ -199,9 +199,6 @@ cleanup:
 int run_hooks(struct repository *r, const char *hook_name)
 {
 	struct run_hooks_opt opt = RUN_HOOKS_OPT_INIT;
-
-	/* All use-cases of this API require ungrouping. */
-	opt.ungroup = 1;
 
 	return run_hooks_opt(r, hook_name, &opt);
 }
