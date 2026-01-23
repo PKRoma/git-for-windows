@@ -330,6 +330,11 @@ int mingw_core_config(const char *var, const char *value,
 	return 0;
 }
 
+static inline int is_wdir_sep(wchar_t wchar)
+{
+	return wchar == L'/' || wchar == L'\\';
+}
+
 static const wchar_t *make_relative_to(const wchar_t *path,
 				       const wchar_t *relative_to, wchar_t *out,
 				       size_t size)
@@ -499,11 +504,6 @@ static int create_phantom_symlink(wchar_t *wtarget, wchar_t *wlink)
 		break;
 	}
 	return 0;
-}
-
-static inline int is_wdir_sep(wchar_t wchar)
-{
-	return wchar == L'/' || wchar == L'\\';
 }
 
 /* Normalizes NT paths as returned by some low-level APIs. */
