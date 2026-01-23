@@ -382,7 +382,7 @@ process_phantom_symlink(const wchar_t *wtarget, const wchar_t *wlink)
 {
 	HANDLE hnd;
 	BY_HANDLE_FILE_INFORMATION fdata;
-	wchar_t relative[MAX_PATH];
+	wchar_t relative[MAX_LONG_PATH];
 	const wchar_t *rel;
 
 	/* check that wlink is still a file symlink */
@@ -535,7 +535,7 @@ int mingw_unlink(const char *pathname, int handle_in_use_error)
 {
 	int tries = 0;
 	wchar_t wpathname[MAX_LONG_PATH];
-	if (xutftowcs_path(wpathname, pathname) < 0)
+	if (xutftowcs_long_path(wpathname, pathname) < 0)
 		return -1;
 
 	if (DeleteFileW(wpathname))
@@ -1117,9 +1117,9 @@ static int current_directory_len = 0;
 
 int mingw_chdir(const char *dirname)
 {
+	int result;
 	wchar_t wdirname[MAX_LONG_PATH];
-
-	if (xutftowcs_path(wdirname, dirname) < 0)
+	if (xutftowcs_long_path(wdirname, dirname) < 0)
 		return -1;
 
 	if (has_symlinks) {
@@ -1138,7 +1138,9 @@ int mingw_chdir(const char *dirname)
 		CloseHandle(hnd);
 	}
 
-	return _wchdir(normalize_ntpath(wdirname));
+	result = _wchdir(normalize_ntpath(wdirname));
+	current_directory_len = GetCurrentDirectoryW(0, NULL);
+	return result;
 }
 
 int mingw_chmod(const char *filename, int mode)
@@ -1279,7 +1281,7 @@ int mingw_lstat(const char *file_name, struct stat *buf)
 	DWORD reparse_tag = 0;
 	int link_len = 0;
 	wchar_t wfilename[MAX_LONG_PATH];
-	int wlen = xutftowcs_path(wfilename, file_name);
+	int wlen = xutftowcs_long_path(wfilename, file_name);
 	if (wlen < 0)
 		return -1;
 
@@ -1294,7 +1296,7 @@ int mingw_lstat(const char *file_name, struct stat *buf)
 	if (GetFileAttributesExW(wfilename, GetFileExInfoStandard, &fdata)) {
 		/* for reparse points, get the link tag and length */
 		if (fdata.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) {
-			char tmpbuf[MAX_PATH];
+			char tmpbuf[MAX_LONG_PATH];
 
 			if (read_reparse_point(wfilename, FALSE, tmpbuf,
 					       &link_len, &reparse_tag) < 0)
@@ -1375,12 +1377,12 @@ static int get_file_info_by_handle(HANDLE hnd, struct stat *buf)
 
 int mingw_stat(const char *file_name, struct stat *buf)
 {
-	wchar_t wfile_name[MAX_PATH];
+	wchar_t wfile_name[MAX_LONG_PATH];
 	HANDLE hnd;
 	int result;
 
 	/* open the file and let Windows resolve the links */
-	if (xutftowcs_path(wfile_name, file_name) < 0)
+	if (xutftowcs_long_path(wfile_name, file_name) < 0)
 		return -1;
 	hnd = CreateFileW(wfile_name, 0,
 			FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, NULL,
@@ -3379,7 +3381,7 @@ static enum symlink_type check_symlink_attr(struct index_state *index, const cha
 
 int mingw_create_symlink(struct index_state *index, const char *target, const char *link)
 {
-	wchar_t wtarget[MAX_PATH], wlink[MAX_PATH];
+	wchar_t wtarget[MAX_LONG_PATH], wlink[MAX_LONG_PATH];
 	int len;
 
 	/* fail if symlinks are disabled or API is not supported (WinXP) */
@@ -3388,8 +3390,8 @@ int mingw_create_symlink(struct index_state *index, const char *target, const ch
 		return -1;
 	}
 
-	if ((len = xutftowcs_path(wtarget, target)) < 0
-			|| xutftowcs_path(wlink, link) < 0)
+	if ((len = xutftowcs_long_path(wtarget, target)) < 0
+			|| xutftowcs_long_path(wlink, link) < 0)
 		return -1;
 
 	/* convert target dir separators to backslashes */
@@ -3426,12 +3428,12 @@ int mingw_create_symlink(struct index_state *index, const char *target, const ch
 
 int readlink(const char *path, char *buf, size_t bufsiz)
 {
-	WCHAR wpath[MAX_PATH];
-	char tmpbuf[MAX_PATH];
+	WCHAR wpath[MAX_LONG_PATH];
+	char tmpbuf[MAX_LONG_PATH];
 	int len;
 	DWORD tag;
 
-	if (xutftowcs_path(wpath, path) < 0)
+	if (xutftowcs_long_path(wpath, path) < 0)
 		return -1;
 
 	if (read_reparse_point(wpath, TRUE, tmpbuf, &len, &tag) < 0)
